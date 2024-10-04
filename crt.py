@@ -25,8 +25,6 @@ def get_domains(connection, domain_name):
 		cursor.execute(QUERY.replace("##DOMAIN##", domain_name))
 		data = cursor.fetchall()
 		cursor.close()
-		print(data)
-		print()
 		for item in data:
 			for d in item[0]:
 				if d not in domains:

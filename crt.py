@@ -22,7 +22,7 @@ def get_domains(connection, domain_name):
 
 	try:
 		cursor = connection.cursor()
-	  cursor.execute(QUERY.replace("##DOMAIN##", domain_name))
+		cursor.execute(QUERY.replace("##DOMAIN##", domain_name))
 		data = cursor.fetchall()
 		cursor.close()
 		print(data)
@@ -51,4 +51,5 @@ connection = psycopg2.connect(
 connection.set_session(readonly=True, autocommit=True)
 
 domains = get_domains(connection, sys.argv[1])
-print(domains)
+for d in domains:
+	print(d)

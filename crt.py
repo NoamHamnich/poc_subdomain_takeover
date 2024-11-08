@@ -37,7 +37,7 @@ def get_domains(connection, domain_name):
 
 		start = time.time()
 		cursor.execute(QUERY.replace("##DOMAIN##", domain_name))
-		print(f'\tExecute time : {time.time() - start}')
+		print(f'\tExecute time {domain_name}: {time.time() - start}')
 
 		data = cursor.fetchall()
 
@@ -67,7 +67,7 @@ def get_domains(connection, domain_name):
 
 	return domains
 
-print(f'# Start {sys.argv[1]}: {datetime.now()}')
+print(f'# Start: {datetime.now()}')
 
 start = time.time()
 connection = psycopg2.connect(
@@ -79,8 +79,25 @@ connection = psycopg2.connect(
 connection.set_session(readonly=True, autocommit=True)
 print(f'\tConnection time : {time.time() - start}')
 
-domains = get_domains(connection, sys.argv[1])
-print(f'\tTotal: {len(domains)}')
+
+with open('/tmp/infile', 'r') as fp:
+	lines = fp.read().split('\n')
+
+index = 0
+MAX = 30
+
+for line in lines:
+	if line.strip() == '':
+		continue
+	
+	if index == MAX:
+		break
+
+	domains = get_domains(connection, line)
+	#print(f'\tTotal: {len(domains)}')
+
+	index += 1
+
 #for d in domains:
 #	print(d)
-print(f'# End {sys.argv[1]}: {datetime.now()}')
+print(f'# End: {datetime.now()}')

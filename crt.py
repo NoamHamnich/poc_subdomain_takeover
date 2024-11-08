@@ -1,13 +1,14 @@
 import psycopg2
 import sys
+import time
 QUERY = """
 SELECT array_agg(DISTINCT sub.NAME_VALUE) NAME_VALUES, x509_commonName(sub.CERTIFICATE) COMMON_NAME, x509_notBefore(sub.CERTIFICATE) NOT_BEFORE
 FROM (
-    SELECT cai.*
-    FROM certificate_and_identities cai
-    WHERE plainto_tsquery('certwatch', '##DOMAIN##') @@ identities(cai.CERTIFICATE) AND cai.NAME_VALUE ILIKE ('%' || '##DOMAIN##' || '%')
+	SELECT cai.*
+	FROM certificate_and_identities cai
+	WHERE plainto_tsquery('certwatch', '##DOMAIN##') @@ identities(cai.CERTIFICATE) AND cai.NAME_VALUE ILIKE ('%' || '##DOMAIN##' || '%')
 	ORDER BY x509_notBefore(cai.CERTIFICATE) DESC
-    LIMIT 20000
+	LIMIT 20000
 ) sub 
 GROUP BY sub.CERTIFICATE
 ORDER BY NOT_BEFORE DESC;
@@ -22,8 +23,15 @@ def get_domains(connection, domain_name):
 
 	try:
 		cursor = connection.cursor()
+
+		start = time.time()
 		cursor.execute(QUERY.replace("##DOMAIN##", domain_name))
+		print(f'execute : {time.time() - start}')
+
+		start = time.time()
 		data = cursor.fetchall()
+		print(f'fetchall : {time.time() - start}')
+
 		cursor.close()
 		for item in data:
 			for d in item[0]:
@@ -50,4 +58,5 @@ connection.set_session(readonly=True, autocommit=True)
 
 domains = get_domains(connection, sys.argv[1])
 for d in domains:
-	print(d)
+	pass
+	# print(d)

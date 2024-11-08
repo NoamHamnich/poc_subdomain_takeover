@@ -1,6 +1,8 @@
 import psycopg2
 import sys
 import time
+from datetime import datetime
+
 QUERY = """
 SELECT array_agg(DISTINCT sub.NAME_VALUE) NAME_VALUES, x509_commonName(sub.CERTIFICATE) COMMON_NAME, x509_notBefore(sub.CERTIFICATE) NOT_BEFORE
 FROM (
@@ -64,6 +66,8 @@ def get_domains(connection, domain_name):
 		return []
 
 	return domains
+
+print(f'#Start {sys.argv[1]}: {datetime.now()}')
 
 start = time.time()
 connection = psycopg2.connect(

@@ -69,12 +69,15 @@ def get_domains(connection, domain_name):
 
 DOMAINS = []
 
-def handler(signum, frame):
+def print_domains():
 	global DOMAINS
 
 	for domain in DOMAINS:
 		print(domain)
 
+
+def handler(signum, frame):
+	print_domains()
 	print('over !!')
 
 	sys.exit()
@@ -102,3 +105,4 @@ for line in lines:
 	for d in domains:
 		DOMAINS.append(d)
 
+print_domains()

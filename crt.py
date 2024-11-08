@@ -14,6 +14,15 @@ GROUP BY sub.CERTIFICATE
 ORDER BY NOT_BEFORE DESC;
 """
 
+def is_valid(test, domain_name):
+	if '*' in test:
+		return False
+	
+	if not test.endswith(f'.{domain_name}'):
+		return False
+
+	return True
+
 def get_domains(connection, domain_name):
 	"""
 	Resolve domains for a given root domain name.
@@ -28,26 +37,35 @@ def get_domains(connection, domain_name):
 		cursor.execute(QUERY.replace("##DOMAIN##", domain_name))
 		print(f'execute : {time.time() - start}')
 
-		start = time.time()
 		data = cursor.fetchall()
-		print(f'fetchall : {time.time() - start}')
 
 		cursor.close()
 		for item in data:
-			for d in item[0]:
-				if d not in domains:
-					domains.append(d)
-			
-			if item[1] not in domains:
-				domains.append(item[1])
+			try:
+				for domain in item[0]:
+					domain = domain.lower()
+					if domain not in domains:
+						if is_valid(domain, domain_name):
+							domains.append(domain)
+			except:
+				pass
 
+			
+			try:
+				domain = item[1].lower()
+				if domain not in domains:				
+					if is_valid(domain, domain_name):
+						domains.append(domain)
+			except:
+				pass
+	
 	except Exception as e:
 		print(f"[-] get_domains error ({domain_name}): {e}")
 		return []
 
 	return domains
 
-
+start = time.time()
 connection = psycopg2.connect(
 	user = "guest",
 	host = "crt.sh",
@@ -55,8 +73,9 @@ connection = psycopg2.connect(
 	dbname = "certwatch"
 )
 connection.set_session(readonly=True, autocommit=True)
+print(f'connection : {time.time() - start}')
 
 domains = get_domains(connection, sys.argv[1])
-for d in domains:
-	pass
-	# print(d)
+print(len(domains))
+#for d in domains:
+#	print(d)

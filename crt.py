@@ -37,7 +37,7 @@ def get_domains(connection, domain_name):
 
 		start = time.time()
 		cursor.execute(QUERY.replace("##DOMAIN##", domain_name))
-		print(f'execute : {time.time() - start}')
+		print(f'\tExecute time : {time.time() - start}')
 
 		data = cursor.fetchall()
 
@@ -67,7 +67,7 @@ def get_domains(connection, domain_name):
 
 	return domains
 
-print(f'#Start {sys.argv[1]}: {datetime.now()}')
+print(f'# Start {sys.argv[1]}: {datetime.now()}')
 
 start = time.time()
 connection = psycopg2.connect(
@@ -77,9 +77,10 @@ connection = psycopg2.connect(
 	dbname = "certwatch"
 )
 connection.set_session(readonly=True, autocommit=True)
-print(f'connection : {time.time() - start}')
+print(f'\tConnection time : {time.time() - start}')
 
 domains = get_domains(connection, sys.argv[1])
-print(len(domains))
+print(f'\tTotal: {len(domains)}')
 #for d in domains:
 #	print(d)
+print(f'# End {sys.argv[1]}: {datetime.now()}')

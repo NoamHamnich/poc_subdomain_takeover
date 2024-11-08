@@ -2,6 +2,7 @@ import psycopg2
 import sys
 import time
 from datetime import datetime
+import signal
 
 QUERY = """
 SELECT array_agg(DISTINCT sub.NAME_VALUE) NAME_VALUES, x509_commonName(sub.CERTIFICATE) COMMON_NAME, x509_notBefore(sub.CERTIFICATE) NOT_BEFORE
@@ -37,7 +38,6 @@ def get_domains(connection, domain_name):
 
 		start = time.time()
 		cursor.execute(QUERY.replace("##DOMAIN##", domain_name))
-		#print(f'\tExecute time {domain_name}: {time.time() - start}')
 
 		data = cursor.fetchall()
 
@@ -62,14 +62,27 @@ def get_domains(connection, domain_name):
 				pass
 	
 	except Exception as e:
-		#print(f"[-] get_domains error ({domain_name}): {e}")
 		return []
 
 	return domains
 
-#print(f'# Start: {datetime.now()}')
 
-start = time.time()
+DOMAINS = []
+
+def handler(signum, frame):
+	global DOMAINS
+
+	for domain in DOMAINS:
+		print(domain)
+
+	print('over !!')
+
+	sys.exit()
+
+
+signal.signal(signal.SIGALRM, handler)
+signal.alarm(240)
+
 connection = psycopg2.connect(
 	user = "guest",
 	host = "crt.sh",
@@ -77,22 +90,15 @@ connection = psycopg2.connect(
 	dbname = "certwatch"
 )
 connection.set_session(readonly=True, autocommit=True)
-#print(f'\tConnection time : {time.time() - start}')
 
 with open('/tmp/infile', 'r') as fp:
 	lines = fp.read().split('\n')
 
-total = 0
 for line in lines:
 	if line.strip() == '':
 		continue
 	
 	domains = get_domains(connection, line)
-	total += len(domains)
-	#print(f'\tTotal: {len(domains)}')
+	for d in domains:
+		DOMAINS.append(d)
 
-#for d in domains:
-#	print(d)
-#print(f'# End: {datetime.now()}')
-
-print(f'Time: {time.time() - start}, total : {total}')

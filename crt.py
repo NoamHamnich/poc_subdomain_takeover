@@ -84,7 +84,7 @@ def handler(signum, frame):
 
 
 signal.signal(signal.SIGALRM, handler)
-signal.alarm(240)
+signal.alarm(15)
 
 connection = psycopg2.connect(
 	user = "guest",

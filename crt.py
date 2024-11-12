@@ -16,15 +16,14 @@ FROM (
 GROUP BY sub.CERTIFICATE
 ORDER BY NOT_BEFORE DESC;
 """
-
 def is_valid(test, domain_name):
 	if '*' in test:
 		return False
 	
-	if not test.endswith(f'.{domain_name}'):
-		return False
+	if test.endswith(f'.{domain_name}') or test == domain_name:
+		return True
 
-	return True
+	return False
 
 def get_domains(connection, domain_name):
 	"""
